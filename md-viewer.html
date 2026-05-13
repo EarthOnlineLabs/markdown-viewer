@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Serif SC", "Georgia", "Times New Roman", serif;
+    background: #faf9f7;
+    color: #1a1a1a;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Toolbar ===== */
+  .toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 28px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e8e5e0;
+    height: 49px;
+  }
+
+  .toolbar h1 {
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+    margin-right: auto;
+    user-select: none;
+  }
+  .toolbar h1.clickable { cursor: pointer; }
+  .toolbar h1.clickable:hover { color: #2563eb; }
+
+  button, label.btn {
+    font-family: "Inter", -apple-system, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid #d4d0ca;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button:hover, label.btn:hover {
+    background: #f5f3f0;
+    border-color: #c0bbb4;
+    color: #333;
+  }
+  button.primary {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #fff;
+  }
+  button.primary:hover { background: #333; }
+
+  input[type="file"] { display: none; }
+
+  .filename {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    color: #999;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .toc-toggle { display: none; }
+  .toc-toggle.visible { display: inline-flex; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-12px);
+    padding: 10px 24px;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 300;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #dc2626; }
+
+  /* ===== Landing Page ===== */
+  .landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 49px);
+    margin-top: 49px;
+    padding: 40px 24px;
+  }
+
+  .landing-inner {
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .drop-area {
+    border: 2px dashed #d4d0ca;
+    border-radius: 16px;
+    padding: 56px 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .drop-area:hover {
+    border-color: #b0aba3;
+    background: #f5f3f0;
+  }
+  .drop-area.drag-over {
+    border-color: #2563eb;
+    background: #f0f4ff;
+  }
+  .drop-area svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+    stroke-width: 1;
+  }
+  .drop-area p {
+    font-family: "Noto Serif SC", serif;
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .drop-area small {
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    color: #bbb;
+  }
+
+  .landing-divider {
+    margin: 20px 0;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .landing-divider::before,
+  .landing-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8e5e0;
+  }
+
+  .url-input-group {
+    display: flex;
+    gap: 8px;
+  }
+  .url-input-group input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d4d0ca;
+    border-radius: 8px;
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    background: #fff;
+  }
+  .url-input-group input:focus { border-color: #2563eb; }
+  .url-input-group button {
+    padding: 10px 20px;
+    flex-shrink: 0;
+  }
+
+  /* ===== Drag Overlay (full-page, for when content is displayed) ===== */
+  .drag-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(250, 249, 247, 0.92);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .drag-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .drag-overlay svg {
+    width: 64px;
+    height: 64px;
+    opacity: 0.3;
+    stroke-width: 1;
+  }
+  .drag-overlay p {
+    font-family: "Noto Serif SC", serif;
+    font-size: 18px;
+    color: #888;
+  }
+
+  /* ===== Reader Layout ===== */
+  .reader {
+    margin-top: 49px;
+    min-height: calc(100vh - 49px);
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    position: fixed;
+    top: 49px;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    background: #f8f7f5;
+    border-right: 1px solid #e8e5e0;
+    overflow-y: auto;
+    padding: 0;
+    z-index: 50;
+    transition: transform 0.25s ease;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: #d4d0ca; border-radius: 2px; }
+
+  .reader.no-sidebar .sidebar { transform: translateX(-100%); }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #e8e5e0;
+    position: sticky;
+    top: 0;
+    background: #f8f7f5;
+    z-index: 1;
+  }
+  .sidebar-title {
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .sidebar-close {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    color: #999;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .sidebar-close:hover { background: #ebe8e4; color: #555; }
+
+  .toc-nav {
+    padding: 8px 10px 20px;
+  }
+  .toc-nav a {
+    display: block;
+    padding: 5px 12px;
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 13px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 6px;
+    line-height: 1.5;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+  .toc-nav a:hover {
+    background: #ebe8e4;
+    color: #333;
+  }
+  .toc-nav a.active {
+    background: #e8edf5;
+    color: #2563eb;
+    font-weight: 500;
+    border-left-color: #2563eb;
+  }
+  .toc-nav a.toc-h3 {
+    padding-left: 28px;
+    font-size: 12px;
+    color: #888;
+  }
+  .toc-nav a.toc-h3.active { color: #2563eb; }
+
+  /* ===== Main Content Area ===== */
+  .main {
+    margin-left: 240px;
+    transition: margin-left 0.25s ease;
+  }
+  .reader.no-sidebar .main { margin-left: 0; }
+
+  .content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 120px;
+    line-height: 1.9;
+    color: #2c2c2c;
+    font-size: 16.5px;
+    letter-spacing: 0.01em;
+  }
+
+  /* ===== Headings ===== */
+  .content h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 56px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #1a1a1a;
+    color: #000;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .content h1:first-child { margin-top: 0; }
+
+  .content h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 44px 0 14px;
+    padding: 6px 0 6px 14px;
+    border-left: 4px solid #2563eb;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+  }
+
+  .content h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .content h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: #444;
+  }
+
+  /* ===== Paragraphs ===== */
+  .content p {
+    margin: 0 0 16px;
+    text-align: justify;
+    word-break: break-word;
+  }
+
+  /* ===== Links ===== */
+  .content a {
+    color: #2563eb;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(37, 99, 235, 0.25);
+    transition: border-color 0.15s;
+  }
+  .content a:hover { border-bottom-color: #2563eb; }
+
+  /* ===== Lists ===== */
+  .content ul, .content ol {
+    margin: 0 0 16px;
+    padding-left: 1.8em;
+  }
+  .content li {
+    margin: 5px 0;
+    line-height: 1.75;
+  }
+  .content li > ul, .content li > ol { margin: 4px 0 4px; }
+  .content li::marker { color: #999; }
+
+  /* ===== Blockquote — info (default) ===== */
+  .content blockquote {
+    margin: 20px 0;
+    padding: 14px 20px;
+    border-left: 4px solid #2563eb;
+    background: #f0f4ff;
+    color: #1e3a5f;
+    font-style: normal;
+    border-radius: 0 6px 6px 0;
+  }
+  .content blockquote p:last-child { margin-bottom: 0; }
+  .content blockquote strong { color: #1a56db; }
+
+  .content blockquote.bq-warn {
+    border-left-color: #e67e22;
+    background: #fff8f0;
+    color: #5a3510;
+  }
+  .content blockquote.bq-warn strong { color: #c2410c; }
+
+  .content blockquote.bq-tip {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+    color: #14532d;
+  }
+  .content blockquote.bq-tip strong { color: #15803d; }
+
+  /* ===== Inline code ===== */
+  .content code {
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    font-size: 0.85em;
+    padding: 0.15em 0.45em;
+    background: #f0eee9;
+    border-radius: 3px;
+    color: #c7254e;
+    white-space: nowrap;
+  }
+
+  /* ===== Code block ===== */
+  .content pre {
+    margin: 20px 0;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .content pre code {
+    padding: 0;
+    background: none;
+    color: #2c2c2c;
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre;
+  }
+
+  /* ===== Table ===== */
+  .content table {
+    width: 100%;
+    margin: 20px 0;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.55;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .content th {
+    background: #0f3460;
+    color: #fff;
+    font-weight: 600;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    border-bottom: none;
+  }
+  .content td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e8e8ec;
+    vertical-align: top;
+  }
+  .content tbody tr:nth-child(even) { background: #f7f8fa; }
+  .content tbody tr:hover { background: #eef2ff; }
+
+  /* ===== Misc ===== */
+  .content hr {
+    margin: 36px auto;
+    border: none;
+    width: 80px;
+    height: 1px;
+    background: #d4d0ca;
+  }
+
+  .content img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 16px 0;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+
+  .content strong { color: #111; font-weight: 700; }
+  .content em { color: #666; font-style: italic; }
+
+  .content input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #1a1a1a;
+  }
+
+  /* ===== Semantic color badges ===== */
+  .badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 500;
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    white-space: nowrap;
+  }
+  .sc-user    { background: #e3f2fd; color: #1565c0; }
+  .sc-model   { background: #e8f5e9; color: #1b5e20; }
+  .sc-runtime { background: #f0f0f0; color: #616161; }
+  .sc-inject  { background: #fff3e0; color: #e65100; }
+  .sc-signal  { background: #fef3c7; color: #92400e; font-weight: 600; }
+
+  /* ===== Image path bar ===== */
+  .img-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 28px;
+    background: #fff8f0;
+    border-bottom: 1px solid #f0d8b5;
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 13px;
+    color: #92400e;
+    position: fixed;
+    top: 49px;
+    left: 0;
+    right: 0;
+    z-index: 90;
+  }
+  .img-bar input[type="text"] {
+    flex: 1;
+    padding: 5px 10px;
+    border: 1px solid #d4d0ca;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .img-bar button {
+    padding: 5px 14px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid #d4d0ca;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  /* ===== Print ===== */
+  @page {
+    size: A4;
+    margin: 15mm 15mm 15mm 25mm;
+  }
+
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    .toolbar, .sidebar, .drag-overlay, .img-bar { display: none !important; }
+    body { background: #fff; }
+
+    .main { margin-left: 0 !important; }
+
+    .content {
+      max-width: 100%;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .content h1 {
+      font-size: 20px;
+      margin: 24px 0 8px;
+      padding-bottom: 5px;
+    }
+    .content h1:first-child { margin-top: 0; }
+
+    .content h2 {
+      font-size: 16px;
+      margin: 20px 0 6px;
+      padding: 4px 0 4px 10px;
+      page-break-after: avoid;
+    }
+
+    .content h3 {
+      font-size: 14px;
+      margin: 14px 0 5px;
+      page-break-after: avoid;
+    }
+
+    .content h4 {
+      font-size: 13px;
+      margin: 10px 0 4px;
+      page-break-after: avoid;
+    }
+
+    .content p { margin: 0 0 8px; }
+    .content ul, .content ol { margin: 0 0 8px; }
+    .content li { margin: 2px 0; line-height: 1.5; }
+
+    .content blockquote {
+      margin: 10px 0;
+      padding: 8px 14px;
+      page-break-inside: avoid;
+    }
+
+    .content pre {
+      margin: 10px 0;
+      padding: 8px 12px;
+      page-break-inside: avoid;
+    }
+    .content pre code { font-size: 11px; line-height: 1.45; }
+
+    .content table {
+      margin: 10px 0;
+      font-size: 11.5px;
+    }
+    .content tr { page-break-inside: avoid; }
+    .content th { padding: 5px 8px; font-size: 11px; }
+    .content td { padding: 4px 8px; }
+
+    .content hr { margin: 14px auto; }
+
+    .content img {
+      max-height: 250px;
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+
+    .content code { font-size: 0.82em; padding: 0.1em 0.35em; }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1024px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main { margin-left: 0 !important; }
+    .reader.no-sidebar .sidebar { transform: translateX(-100%); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <h1 id="titleBtn">Markdown Viewer</h1>
+  <span class="filename" id="filename"></span>
+  <button id="tocToggle" class="toc-toggle" title="Toggle sidebar">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3.5a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5zm0 4a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5zm0 4a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5z"/></svg>
+  </button>
+  <label class="btn" for="fileInput">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M7.5 1a.5.5 0 0 1 .5.5V7h5.5a.5.5 0 0 1 0 1H8v5.5a.5.5 0 0 1-1 0V8H1.5a.5.5 0 0 1 0-1H7V1.5A.5.5 0 0 1 7.5 1z"/></svg>
+    打开文件
+  </label>
+  <input type="file" id="fileInput" accept=".md,.markdown,.txt">
+  <button class="primary" id="copyBtn" style="display:none">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>
+    复制内容
+  </button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Drag overlay (shown when dragging files over page in reader mode) -->
+<div class="drag-overlay" id="dragOverlay">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 5v14m-5-4l5 4 5-4"/><rect x="3" y="2" width="18" height="20" rx="3"/></svg>
+  <p>放开以加载文档</p>
+</div>
+
+<!-- Image path bar -->
+<div class="img-bar" id="imgBar" style="display:none">
+  <span>图片无法显示？输入 md 文件所在目录的绝对路径：</span>
+  <input type="text" id="imgPathInput" placeholder="/Users/rik/projects/…/notes/">
+  <button id="imgPathBtn">应用</button>
+</div>
+
+<!-- Landing page -->
+<div id="landing" class="landing">
+  <div class="landing-inner">
+    <div class="drop-area" id="dropArea">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 5v14m-5-4l5 4 5-4"/><rect x="3" y="2" width="18" height="20" rx="3"/></svg>
+      <p>拖放 Markdown 文件到此处</p>
+      <small>支持 .md / .markdown / .txt，也可点击此区域选择文件</small>
+    </div>
+    <div class="landing-divider">或粘贴链接加载</div>
+    <div class="url-input-group">
+      <input type="text" id="urlInput" placeholder="输入路径或 URL…">
+      <button id="urlLoadBtn">加载</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reader view -->
+<div id="reader" class="reader no-sidebar" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">目录</span>
+      <button class="sidebar-close" id="sidebarClose">&times;</button>
+    </div>
+    <nav class="toc-nav" id="tocNav"></nav>
+  </aside>
+  <main class="main">
+    <div class="content" id="output"></div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const output     = $('output');
+const landing    = $('landing');
+const reader     = $('reader');
+const sidebar    = $('sidebar');
+const tocNav     = $('tocNav');
+const tocToggle  = $('tocToggle');
+const copyBtn    = $('copyBtn');
+const filenameEl = $('filename');
+const titleBtn   = $('titleBtn');
+const toast      = $('toast');
+const fileInput  = $('fileInput');
+const dropArea   = $('dropArea');
+const dragOverlay = $('dragOverlay');
+const urlInput   = $('urlInput');
+const imgBar     = $('imgBar');
+const imgPathInput = $('imgPathInput');
+
+marked.setOptions({ gfm: true, breaks: true });
+
+// ===== Semantic color map =====
+const SEMANTIC = {
+  'user':'sc-user','tool_result':'sc-user',
+  'assistant':'sc-model','thinking':'sc-model','text':'sc-model','tool_use':'sc-model',
+  'runtime':'sc-runtime','system':'sc-runtime','mixed':'sc-runtime',
+  'queue-operation':'sc-runtime','last-prompt':'sc-runtime','ai-title':'sc-runtime',
+  'file-history-snapshot':'sc-runtime',
+  'attachment':'sc-inject','deferred_tools_delta':'sc-inject','skill_listing':'sc-inject',
+  'todo_reminder':'sc-inject','hook_success':'sc-inject','command_permissions':'sc-inject',
+  'compact_file_reference':'sc-inject','invoked_skills':'sc-inject',
+  'stop_reason':'sc-signal','end_turn':'sc-signal','stop_hook_summary':'sc-signal',
+};
+
+function semanticClass(text) {
+  return SEMANTIC[text.toLowerCase().replace(/\(.*\)/,'').trim()] || null;
+}
+
+// ===== Toast =====
+let toastTimer;
+function showToast(msg, isError) {
+  clearTimeout(toastTimer);
+  toast.textContent = msg;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2400);
+}
+
+// ===== Post-processing =====
+function postProcess() {
+  output.querySelectorAll('code').forEach(el => {
+    if (el.parentElement.tagName === 'PRE') return;
+    const cls = semanticClass(el.textContent);
+    if (cls) el.classList.add(cls);
+  });
+
+  output.querySelectorAll('td').forEach(td => {
+    const cls = semanticClass(td.textContent.trim());
+    if (cls) td.innerHTML = '<span class="badge ' + cls + '">' + td.innerHTML + '</span>';
+  });
+
+  output.querySelectorAll('blockquote').forEach(bq => {
+    const t = bq.textContent.trim();
+    if (/^[⚠️⚠]/.test(t))        bq.classList.add('bq-warn');
+    else if (/^[💡✅✓☑]/.test(t)) bq.classList.add('bq-tip');
+  });
+}
+
+// ===== TOC & Sidebar =====
+let scrollHandler = null;
+
+function generateTOC() {
+  if (scrollHandler) {
+    window.removeEventListener('scroll', scrollHandler);
+    scrollHandler = null;
+  }
+
+  const headings = output.querySelectorAll('h2, h3');
+
+  if (headings.length < 3) {
+    reader.classList.add('no-sidebar');
+    tocToggle.classList.remove('visible');
+    tocNav.innerHTML = '';
+    return;
+  }
+
+  reader.classList.remove('no-sidebar');
+  tocToggle.classList.add('visible');
+
+  let html = '';
+  headings.forEach((h, i) => {
+    const id = 'sec-' + i;
+    h.id = id;
+    const cls = h.tagName === 'H3' ? ' toc-h3' : '';
+    html += '<a href="#' + id + '" class="' + cls + '">' + h.textContent + '</a>';
+  });
+  tocNav.innerHTML = html;
+
+  // Scroll spy
+  const links = tocNav.querySelectorAll('a');
+  scrollHandler = function() {
+    const scrollY = window.scrollY + 80;
+    let current = '';
+    headings.forEach(h => { if (h.offsetTop <= scrollY) current = h.id; });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  };
+  window.addEventListener('scroll', scrollHandler, { passive: true });
+  scrollHandler();
+}
+
+// TOC click → smooth scroll
+tocNav.addEventListener('click', e => {
+  const link = e.target.closest('a');
+  if (!link) return;
+  e.preventDefault();
+  const el = document.getElementById(link.getAttribute('href').slice(1));
+  if (el) window.scrollTo({ top: el.offsetTop - 60, behavior: 'smooth' });
+  // Close sidebar on mobile after click
+  if (window.innerWidth <= 1024) sidebar.classList.remove('mobile-open');
+});
+
+function toggleSidebar() {
+  if (window.innerWidth <= 1024) {
+    sidebar.classList.toggle('mobile-open');
+  } else {
+    reader.classList.toggle('no-sidebar');
+  }
+}
+
+tocToggle.addEventListener('click', toggleSidebar);
+$('sidebarClose').addEventListener('click', toggleSidebar);
+
+// ===== Core Render =====
+function renderMd(text, name) {
+  output.innerHTML = marked.parse(text);
+  postProcess();
+  generateTOC();
+
+  landing.style.display = 'none';
+  reader.style.display = '';
+  copyBtn.style.display = '';
+  filenameEl.textContent = name || '';
+  titleBtn.classList.add('clickable');
+  document.title = name ? name.replace(/\.\w+$/, '') : 'Markdown Viewer';
+
+  checkImages();
+  window.scrollTo({ top: 0 });
+}
+
+function showLanding() {
+  reader.style.display = 'none';
+  landing.style.display = '';
+  copyBtn.style.display = 'none';
+  tocToggle.classList.remove('visible');
+  filenameEl.textContent = '';
+  titleBtn.classList.remove('clickable');
+  document.title = 'Markdown Viewer';
+  imgBar.style.display = 'none';
+
+  // Clean URL params
+  if (window.location.search) history.replaceState({}, '', window.location.pathname);
+}
+
+// Title click → back to landing
+titleBtn.addEventListener('click', () => {
+  if (titleBtn.classList.contains('clickable')) showLanding();
+});
+
+// ===== URL Loading =====
+function isLocalPath(str) {
+  return /^(\/|~\/|[A-Z]:\\)/i.test(str);
+}
+
+const isLocalServer = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+
+function normalizeGitHubUrl(url) {
+  const m = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/);
+  if (m) return 'https://raw.githubusercontent.com/' + m[1] + '/' + m[2] + '/' + m[3];
+  return url;
+}
+
+function extractFilename(str) {
+  return str.split('/').pop() || str;
+}
+
+function handleInput(val) {
+  val = val.trim();
+  if (!val) return;
+  if (isLocalPath(val)) {
+    loadLocalFile(val);
+    return;
+  }
+  loadFromUrl(val);
+}
+
+async function loadLocalFile(path) {
+  showToast('加载中…');
+  const base = isLocalServer ? '' : 'http://127.0.0.1:9274';
+  try {
+    const res = await fetch(base + '/api/read?path=' + encodeURIComponent(path));
+    if (!res.ok) throw new Error('文件未找到');
+    const text = await res.text();
+    renderMd(text, extractFilename(path));
+
+    const u = new URL(window.location);
+    u.searchParams.set('file', path);
+    history.replaceState({}, '', u);
+  } catch (err) {
+    if (!isLocalServer) {
+      showToast('无法连接本地服务。请先运行 mdview 命令启动本地服务', true);
+    } else {
+      showToast('加载失败: ' + err.message, true);
+    }
+  }
+}
+
+async function loadFromUrl(url) {
+  url = normalizeGitHubUrl(url.trim());
+  showToast('加载中…');
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    renderMd(text, extractFilename(url));
+
+    const u = new URL(window.location);
+    u.searchParams.set('url', url);
+    history.replaceState({}, '', u);
+  } catch (err) {
+    showToast('加载失败: ' + err.message, true);
+  }
+}
+
+$('urlLoadBtn').addEventListener('click', () => handleInput(urlInput.value));
+
+urlInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleInput(urlInput.value);
+});
+
+// ===== File Handling =====
+function handleFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => renderMd(e.target.result, file.name);
+  r.readAsText(file);
+}
+
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+// Drop area click → open file picker
+dropArea.addEventListener('click', () => fileInput.click());
+
+// ===== Drag & Drop =====
+let dragCounter = 0;
+
+document.addEventListener('dragover', e => e.preventDefault());
+
+document.addEventListener('dragenter', e => {
+  e.preventDefault();
+  dragCounter++;
+  if (reader.style.display !== 'none') {
+    dragOverlay.classList.add('active');
+  } else {
+    dropArea.classList.add('drag-over');
+  }
+});
+
+document.addEventListener('dragleave', () => {
+  dragCounter--;
+  if (dragCounter <= 0) {
+    dragCounter = 0;
+    dragOverlay.classList.remove('active');
+    dropArea.classList.remove('drag-over');
+  }
+});
+
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  dragCounter = 0;
+  dragOverlay.classList.remove('active');
+  dropArea.classList.remove('drag-over');
+
+  const items = e.dataTransfer.items;
+  if (items && items.length > 0 && items[0].webkitGetAsEntry) {
+    const entry = items[0].webkitGetAsEntry();
+    if (entry && entry.isFile) {
+      entry.file(file => {
+        const r = new FileReader();
+        r.onload = ev => {
+          renderMd(ev.target.result, file.name);
+          if (entry.getParent) {
+            entry.getParent(dir => resolveImagesFromDir(dir), () => checkImages());
+          } else {
+            checkImages();
+          }
+        };
+        r.readAsText(file);
+      });
+      return;
+    }
+  }
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+function resolveImagesFromDir(dirEntry) {
+  const dirReader = dirEntry.createReader();
+  const allEntries = [];
+  function readAll() {
+    dirReader.readEntries(entries => {
+      if (entries.length === 0) {
+        const fileMap = {};
+        allEntries.forEach(e => { if (e.isFile) fileMap[e.name] = e; });
+        output.querySelectorAll('img').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && !src.startsWith('http') && !src.startsWith('data:') && !src.startsWith('file://') && fileMap[src]) {
+            fileMap[src].file(f => { img.src = URL.createObjectURL(f); });
+          }
+        });
+        return;
+      }
+      allEntries.push(...entries);
+      readAll();
+    });
+  }
+  readAll();
+}
+
+// ===== Copy =====
+copyBtn.addEventListener('click', () => {
+  const html = output.innerHTML;
+  navigator.clipboard.write([
+    new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([output.innerText], { type: 'text/plain' }),
+    })
+  ]).then(() => showToast('已复制到剪贴板'));
+});
+
+// ===== Paste markdown =====
+document.addEventListener('paste', e => {
+  if (reader.style.display !== 'none') return;
+  const text = e.clipboardData.getData('text');
+  if (text && text.length > 10) renderMd(text, '粘贴内容');
+});
+
+// ===== Image path handling =====
+$('imgPathBtn').addEventListener('click', applyImgPath);
+
+function applyImgPath() {
+  let base = imgPathInput.value.trim();
+  if (!base) return;
+  if (!base.endsWith('/')) base += '/';
+  const prefix = base.startsWith('file://') ? base : 'file://' + base;
+  output.querySelectorAll('img').forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !src.startsWith('http') && !src.startsWith('file://') && !src.startsWith('data:')) {
+      img.src = prefix + src;
+    }
+  });
+  try { localStorage.setItem('md_imgpath', base); } catch(e) {}
+  imgBar.style.display = 'none';
+}
+
+function checkImages() {
+  let hasRelative = false;
+  output.querySelectorAll('img').forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !src.startsWith('http') && !src.startsWith('file://') && !src.startsWith('data:')) {
+      hasRelative = true;
+    }
+  });
+  if (hasRelative) {
+    const saved = localStorage.getItem('md_imgpath');
+    if (saved) {
+      imgPathInput.value = saved;
+      applyImgPath();
+    } else {
+      imgBar.style.display = '';
+    }
+  }
+}
+
+// ===== Init =====
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  const file = params.get('file');
+  const url = params.get('url');
+  if (file) loadLocalFile(file);
+  else if (url) loadFromUrl(url);
+})();
+</script>
+</body>
+</html>

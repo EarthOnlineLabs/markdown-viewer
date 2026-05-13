@@ -1,0 +1,5 @@
+#!/bin/bash
+# mdview — 本地 Markdown 美化阅读器
+# Usage: mdview [file.md]
+REAL_DIR="$(cd "$(dirname "$(readlink "$0" || echo "$0")")" && pwd)"
+exec python3 "$REAL_DIR/server.py" "$@"
