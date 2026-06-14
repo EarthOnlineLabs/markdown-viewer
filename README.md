@@ -75,8 +75,9 @@ vercel deploy --prod --yes      # CLI 直接发布
 md-viewer.html        主体（HTML + CSS + JS 全部内联）
 manifest.webmanifest  PWA 清单（含 share_target / file_handlers）
 sw.js                 Service Worker（离线缓存 + 接收分享）
-favicon.svg           站点图标（彩虹「MD」字标）
-icons/                PWA 图标（192/512/maskable/apple + 源 SVG，均为彩虹「MD」字标）
+favicon.svg           站点图标（方型彩虹「MD」，浏览器标签页用）
+favicon.ico           标签页图标兜底（16/32，老浏览器 / 自动请求 /favicon.ico）
+icons/                PWA 图标（192/512/maskable/apple）+ favicon-16/32.png + 源 SVG，均为彩虹「MD」
 server.py             本地阅读服务（/api/read + 静态资源）
 mdview                启动脚本
 vercel.json           Vercel 重写规则与响应头
