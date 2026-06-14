@@ -16,7 +16,7 @@
   - 离线缓存 app shell + marked。
 - **底部署名**：落地页与阅读页均有 "Built by EarthOnline"（链 earthonline.site）。
 - **开源**：MIT License；GitHub 仓库 `EarthOnlineDev/markdown-viewer`（公开）。
-- **部署**：https://md-viewer-theta.vercel.app （Vercel 团队 earthonlinedevs-projects / 项目 md-viewer）。
+- **部署**：**https://md.earthonline.site**（自定义域名，已绑定+SSL）；备用 https://md-viewer-theta.vercel.app 。Vercel 团队 earthonlinedevs-projects / 项目 md-viewer。
 - **本地**：`./mdview`；server.py 现也服务 manifest/sw/favicon/icons，与线上一致。
 
 ## 已验证
@@ -29,7 +29,7 @@
 ## 待办 / 待决策
 
 1. **URL 登录保护（"私有"）** — 当前 Vercel 计划不支持 production 的 Vercel Authentication（API `428`）。若要 URL 必须登录才可访问，需升级团队到 Pro。当前：私有团队项目 + 公开 URL。
-2. **自定义域名** — 可挂 `earthonline.site` 子域（如 `md.earthonline.site`），待确认名称后用 `vercel domains/alias` 绑定。
+2. ~~自定义域名~~ ✅ 已绑定 `md.earthonline.site`（Aliyun DNS: CNAME md → cname.vercel-dns.com；Vercel 已签发 SSL）。
 3. **Git Integration** — 已（尝试）将 Vercel 项目连到 GitHub 仓库；之后 push 到 main 可自动部署。若未连成，仍可 `vercel deploy --prod --yes`。
 4. **旧地址 `md-viewer-green.vercel.app`** — 属另一个无法访问的 Vercel 账号，仍是旧版；如需更新需切换 CLI 登录。
 

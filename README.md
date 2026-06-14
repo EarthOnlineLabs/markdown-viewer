@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
 &nbsp;Built by [EarthOnline](https://earthonline.site)
 
-线上体验 / Live: **https://md-viewer-theta.vercel.app**
+线上体验 / Live: **https://md.earthonline.site**
 
 ---
 
@@ -59,7 +59,7 @@ python3 server.py [file.md]
 
 ## 部署
 
-托管在 Vercel（团队 `earthonlinedevs-projects`，项目 `md-viewer`）。
+托管在 Vercel（团队 `earthonlinedevs-projects`，项目 `md-viewer`），自定义域名 `md.earthonline.site`（备用 `md-viewer-theta.vercel.app`）。
 
 ```bash
 vercel deploy --prod --yes      # CLI 直接发布
