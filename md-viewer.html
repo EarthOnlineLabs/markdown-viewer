@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Markdown Viewer · EarthOnline</title>
 <meta name="description" content="一个单文件 Markdown 美化阅读器 — 本地文件 / URL / 剪贴板 / 手机分享打开。Built by EarthOnline.">
-<script>/* set theme before paint to avoid FOUC */try{document.documentElement.setAttribute('data-theme',localStorage.getItem('md_theme')==='classic'?'classic':'aiself')}catch(e){}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#FFFFFF" id="themeColorMeta">
+<meta name="theme-color" content="#FFFFFF">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,16 +15,13 @@
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   /* ============================================================
-     THEME TOKENS
-     Two themes selected via <html data-theme="...">:
-       · aiself  — AISelf 光谱 (default): pure-white paper, ink + serif,
-                   spectrum accents used only as small decoration.
-       · classic — 经典蓝: the original blue Inter-based style.
+     THEME TOKENS — AISelf 光谱: pure-white paper, ink + serif,
+     spectrum used only as small border/accent decoration.
      ============================================================ */
   :root {
     /* shared metrics */
@@ -99,60 +95,6 @@
     --badge-signal-bg:var(--t-coral);  --badge-signal-ink:#9E3320;
   }
 
-  /* ---------- 经典蓝 classic ---------- */
-  html[data-theme="classic"] {
-    --font-read: 'Noto Serif SC','Georgia','Times New Roman',serif;
-    --font-ui: 'Inter',-apple-system,sans-serif;
-    --font-mono: 'SF Mono','Fira Code',Menlo,monospace;
-    --font-title: 'Inter',-apple-system,sans-serif;
-
-    --paper:#faf9f7;
-    --ink:#1a1a1a; --ink-strong:#000000; --soft:#555555; --muted:#999999;
-    --rule:#e8e5e0; --rule-strong:#d4d0ca; --card:#f8f7f5; --card-2:#f1efeb;
-
-    --toolbar-bg: rgba(255,255,255,.85);
-    --title-ink:#1a1a1a; --title-hover:#2563eb;
-
-    --lh-read: 1.9;
-    --link:#2563eb; --link-underline: rgba(37,99,235,.25); --link-hover:#2563eb;
-
-    --r-btn: 8px;
-    --btn-bg:#ffffff; --btn-ink:#555555; --btn-border:#d4d0ca;
-    --btn-hover-bg:#f5f3f0; --btn-hover-border:#c0bbb4; --btn-hover-ink:#333333;
-    --btn-pri-bg:#1a1a1a; --btn-pri-ink:#ffffff; --btn-pri-hover:#333333;
-
-    --sidebar-bg:#f8f7f5;
-    --toc-ink:#666666; --toc-hover-bg:#ebe8e4; --toc-hover-ink:#333333;
-    --toc-active-bg:#e8edf5; --toc-active-ink:#2563eb; --toc-active-bar:#2563eb;
-    --toc-h3-ink:#888888;
-
-    --h1-rule:#1a1a1a; --h1-rule-w:3px;
-    --hr-color:#d4d0ca;
-
-    --code-inline-bg:#f0eee9; --code-inline-ink:#c7254e;
-    --code-bg:#f8f9fa; --code-ink:#2c2c2c; --code-border:#e2e4e8;
-
-    --bq-info-bg:#f0f4ff; --bq-info-bar:#2563eb; --bq-info-ink:#1e3a5f; --bq-info-strong:#1a56db;
-    --bq-warn-bg:#fff8f0; --bq-warn-bar:#e67e22; --bq-warn-ink:#5a3510; --bq-warn-strong:#c2410c;
-    --bq-tip-bg:#f0fdf4;  --bq-tip-bar:#16a34a;  --bq-tip-ink:#14532d;  --bq-tip-strong:#15803d;
-
-    --table-border:#e8e8ec; --row-alt:#f7f8fa; --row-hover:#eef2ff;
-    --th-bg:#0f3460; --th-ink:#ffffff; --th-rule:transparent;
-
-    --toast-bg:#1a1a1a; --toast-ink:#ffffff; --toast-err:#dc2626;
-
-    --imgbar-bg:#fff8f0; --imgbar-border:#f0d8b5; --imgbar-ink:#92400e;
-
-    --drop-border:#d4d0ca; --drop-hover-bg:#f5f3f0; --drop-hover-border:#b0aba3;
-    --drop-active-bg:#f0f4ff; --drop-active-border:#2563eb;
-
-    --badge-user-bg:#e3f2fd;   --badge-user-ink:#1565c0;
-    --badge-model-bg:#e8f5e9;  --badge-model-ink:#1b5e20;
-    --badge-runtime-bg:#f0f0f0; --badge-runtime-ink:#616161;
-    --badge-inject-bg:#fff3e0;  --badge-inject-ink:#e65100;
-    --badge-signal-bg:#fef3c7;  --badge-signal-ink:#92400e;
-  }
-
   body {
     font-family: var(--font-read);
     background: var(--paper);
@@ -186,8 +128,7 @@
     min-width: 0;
   }
   .brand.is-clickable { cursor: pointer; }
-  .brand-mark { width: 30px; height: 17px; flex: none; display: block; }
-  html[data-theme="classic"] .brand-mark { display: none; }
+  .brand-mark { height: 20px; width: auto; flex: none; display: block; }
 
   .toolbar h1 {
     font-family: var(--font-title);
@@ -201,40 +142,8 @@
     white-space: nowrap;
     min-width: 0;
   }
-  html[data-theme="classic"] .toolbar h1 { font-size: 14px; }
   .toolbar h1.clickable { cursor: pointer; }
   .toolbar h1.clickable:hover { color: var(--title-hover); }
-
-  /* theme switcher (segmented control) */
-  .theme-seg {
-    display: inline-flex;
-    align-items: center;
-    background: var(--card-2);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-pill);
-    padding: 3px;
-    gap: 2px;
-    flex: none;
-  }
-  .theme-seg button {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--soft);
-    border: none;
-    background: transparent;
-    padding: 5px 12px;
-    border-radius: var(--r-pill);
-    cursor: pointer;
-    transition: color .15s, background .15s;
-  }
-  .theme-seg button:hover { color: var(--ink); }
-  .theme-seg button.active {
-    background: var(--paper);
-    color: var(--ink);
-    box-shadow: var(--sh-sm);
-    font-weight: 600;
-  }
 
   button, label.btn {
     font-family: var(--font-ui);
@@ -323,7 +232,7 @@
   }
 
   .landing-logo { margin-bottom: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .landing-logo svg { width: 64px; height: 36px; }
+  .landing-logo svg { height: 46px; width: auto; }
   .landing-logo .tagline {
     font-family: var(--font-ui);
     font-size: 12px;
@@ -331,7 +240,6 @@
     text-transform: uppercase;
     color: var(--muted);
   }
-  html[data-theme="classic"] .landing-logo { display: none; }
 
   .drop-area {
     border: 2px dashed var(--drop-border);
@@ -442,14 +350,18 @@
     text-align: center;
   }
 
-  /* footer: Built by EarthOnline */
+  /* footer: Built by [∞ EarthOnline logo] EarthOnline */
   .app-footer {
     margin-top: 26px;
     font-family: var(--font-ui);
     font-size: 12px;
     color: var(--muted);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
+  .app-footer .eo-mark { height: 13px; width: auto; flex: none; }
   .app-footer a {
     color: var(--soft);
     text-decoration: none;
@@ -631,13 +543,7 @@
     letter-spacing: -0.01em;
     line-height: 1.35;
   }
-  /* classic: blue left bar */
-  html[data-theme="classic"] .content h2 {
-    padding: 6px 0 6px 14px;
-    border-left: 4px solid var(--a-blue);
-    border-left-color: #2563eb;
-  }
-  /* aiself: small spectrum dot, color rotates per section (色作点缀) */
+  /* small spectrum dot, color rotates per section (色作点缀) */
   html[data-theme="aiself"] .content h2 {
     display: flex;
     align-items: baseline;
@@ -1004,13 +910,11 @@
   @media (max-width: 640px) {
     .toolbar { padding: 10px 14px; gap: 8px; }
     .filename { display: none; }
-    .theme-seg button { padding: 5px 10px; }
     /* icon-only actions to fit narrow toolbars */
     .btn-label { display: none; }
     .toolbar label.btn, .toolbar > button { padding: 7px 10px; }
-    /* aiself keeps the ∞ mark as logo; hide the wordmark to make room.
-       classic has no mark, so keep its title as the home affordance. */
-    html[data-theme="aiself"] .toolbar h1 { display: none; }
+    /* keep the MD mark as logo; hide the wordmark to make room */
+    .toolbar h1 { display: none; }
     .content { padding: 36px 18px 90px; }
   }
 </style>
@@ -1020,23 +924,15 @@
 <!-- Toolbar -->
 <div class="toolbar">
   <span class="brand" id="brand">
-    <svg class="brand-mark" viewBox="12 12 76 32" fill="none" aria-hidden="true">
-      <defs><linearGradient id="brandSp" x1="16" y1="0" x2="84" y2="0" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#8A43E6"/><stop offset=".2" stop-color="#8A43E6"/>
-        <stop offset=".2" stop-color="#4FA8F0"/><stop offset=".4" stop-color="#4FA8F0"/>
-        <stop offset=".4" stop-color="#1FA45D"/><stop offset=".6" stop-color="#1FA45D"/>
-        <stop offset=".6" stop-color="#F4811E"/><stop offset=".8" stop-color="#F4811E"/>
-        <stop offset=".8" stop-color="#E8482A"/><stop offset="1" stop-color="#E8482A"/>
+    <svg class="brand-mark" viewBox="0 0 60 40" aria-label="MD" role="img">
+      <defs><linearGradient id="mdGradTb" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8A43E6"/><stop offset=".27" stop-color="#4FA8F0"/><stop offset=".5" stop-color="#1FA45D"/><stop offset=".73" stop-color="#F4811E"/><stop offset="1" stop-color="#E8482A"/>
       </linearGradient></defs>
-      <path d="M50 28 C 42 15, 18 15, 18 28 C 18 41, 42 41, 50 28 C 58 15, 82 15, 82 28 C 82 41, 58 41, 50 28 Z" stroke="url(#brandSp)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="30" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradTb)">MD</text>
     </svg>
     <h1 id="titleBtn">Markdown Viewer</h1>
   </span>
   <span class="filename" id="filename"></span>
-  <div class="theme-seg" id="themeSeg" role="group" aria-label="切换样式">
-    <button type="button" data-theme-val="aiself" aria-pressed="true">光谱</button>
-    <button type="button" data-theme-val="classic" aria-pressed="false">经典蓝</button>
-  </div>
   <button id="tocToggle" class="toc-toggle" title="Toggle sidebar">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3.5a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5zm0 4a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5zm0 4a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5z"/></svg>
   </button>
@@ -1072,8 +968,11 @@
 <div id="landing" class="landing">
   <div class="landing-inner">
     <div class="landing-logo">
-      <svg viewBox="12 12 76 32" fill="none" aria-label="AISelf">
-        <path d="M50 28 C 42 15, 18 15, 18 28 C 18 41, 42 41, 50 28 C 58 15, 82 15, 82 28 C 82 41, 58 41, 50 28 Z" stroke="url(#brandSp)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg viewBox="0 0 60 40" aria-label="MD" role="img">
+        <defs><linearGradient id="mdGradLd" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#8A43E6"/><stop offset=".27" stop-color="#4FA8F0"/><stop offset=".5" stop-color="#1FA45D"/><stop offset=".73" stop-color="#F4811E"/><stop offset="1" stop-color="#E8482A"/>
+        </linearGradient></defs>
+        <text x="30" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradLd)">MD</text>
       </svg>
       <span class="tagline">Markdown Viewer</span>
     </div>
@@ -1095,7 +994,7 @@
       <button id="urlLoadBtn">加载</button>
     </div>
     <p class="landing-hint">微信／飞书收到的 .md：选「用其他应用打开」存到「文件」，再回本页打开。</p>
-    <footer class="app-footer">Built by <a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
+    <footer class="app-footer">Built by<svg class="eo-mark" viewBox="12 12 76 32" fill="none" aria-hidden="true"><defs><linearGradient id="spGradF1" x1="16" y1="0" x2="84" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8A43E6"/><stop offset=".2" stop-color="#8A43E6"/><stop offset=".2" stop-color="#4FA8F0"/><stop offset=".4" stop-color="#4FA8F0"/><stop offset=".4" stop-color="#1FA45D"/><stop offset=".6" stop-color="#1FA45D"/><stop offset=".6" stop-color="#F4811E"/><stop offset=".8" stop-color="#F4811E"/><stop offset=".8" stop-color="#E8482A"/><stop offset="1" stop-color="#E8482A"/></linearGradient></defs><path d="M50 28 C 42 15, 18 15, 18 28 C 18 41, 42 41, 50 28 C 58 15, 82 15, 82 28 C 82 41, 58 41, 50 28 Z" stroke="url(#spGradF1)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
   </div>
 </div>
 
@@ -1110,7 +1009,7 @@
   </aside>
   <main class="main">
     <div class="content" id="output"></div>
-    <footer class="app-footer reader-footer">Built by <a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
+    <footer class="app-footer reader-footer">Built by<svg class="eo-mark" viewBox="12 12 76 32" fill="none" aria-hidden="true"><defs><linearGradient id="spGradF2" x1="16" y1="0" x2="84" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8A43E6"/><stop offset=".2" stop-color="#8A43E6"/><stop offset=".2" stop-color="#4FA8F0"/><stop offset=".4" stop-color="#4FA8F0"/><stop offset=".4" stop-color="#1FA45D"/><stop offset=".6" stop-color="#1FA45D"/><stop offset=".6" stop-color="#F4811E"/><stop offset=".8" stop-color="#F4811E"/><stop offset=".8" stop-color="#E8482A"/><stop offset="1" stop-color="#E8482A"/></linearGradient></defs><path d="M50 28 C 42 15, 18 15, 18 28 C 18 41, 42 41, 50 28 C 58 15, 82 15, 82 28 C 82 41, 58 41, 50 28 Z" stroke="url(#spGradF2)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
   </main>
 </div>
 
@@ -1140,34 +1039,6 @@ const pasteArea      = $('pasteArea');
 const pasteRenderBtn = $('pasteRenderBtn');
 
 marked.setOptions({ gfm: true, breaks: true });
-
-// ===== Theme switcher =====
-const THEME_KEY = 'md_theme';
-const themeSeg = $('themeSeg');
-
-function applyTheme(t) {
-  const theme = t === 'classic' ? 'classic' : 'aiself';
-  document.documentElement.setAttribute('data-theme', theme);
-  const tc = document.getElementById('themeColorMeta');
-  if (tc) tc.setAttribute('content', theme === 'classic' ? '#faf9f7' : '#FFFFFF');
-  themeSeg.querySelectorAll('button').forEach(b => {
-    const on = b.dataset.themeVal === theme;
-    b.classList.toggle('active', on);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
-}
-
-themeSeg.addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (b) applyTheme(b.dataset.themeVal);
-});
-
-(function initTheme() {
-  let saved = 'aiself';
-  try { saved = localStorage.getItem(THEME_KEY) || 'aiself'; } catch (_) {}
-  applyTheme(saved);
-})();
 
 // ===== Semantic color map =====
 const SEMANTIC = {
