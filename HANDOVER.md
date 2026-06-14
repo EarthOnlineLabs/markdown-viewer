@@ -4,27 +4,44 @@
 
 ## 当前状态（2026-06-14）
 
-- **新增「光谱」默认样式 + 保留「经典蓝」可选样式**，已上线。
-  - 视觉规范取自 `/Users/rik/projects/AISelf/design-exploration`（`design-system.html` / `LOGO_SPEC.md`）。
-  - 原则：墨为底、色作点缀；用边框、不用大面积色块；无深色代码块。
-  - 工具栏分段切换，选择持久化到 `localStorage['md_theme']`，前置脚本避免 FOUC。
-- **已部署**：https://md-viewer-theta.vercel.app
-  - Vercel 团队 `earthonlinedevs-projects` / 项目 `md-viewer`（本会话新建并 link）。
-  - 提交：`cb26c80`（main，本地；无 GitHub 远端）。
-- **已通过验证**：双主题 × 桌面/移动（390px）；代码块、表格、徽章、引用块、TOC 滚动高亮、主题持久化、点 logo 返回首页；移动端工具栏图标化不溢出；打印样式。
-- **已做对抗式多维 review**（设计还原 / 主题隔离 / JS / 响应式·打印·a11y）并修复确认项（徽章对比度、链接墨色、引用块边框化、彩虹分隔线、FOUC 归一化、打印表头转浅底）。
+**已开源 + PWA 化，作为 EarthOnline 开源产品推广。**
+
+- **双主题阅读器**：光谱（默认，取自 AISelf design-exploration 规范）+ 经典蓝（原样式）。原则：墨为底、色作点缀；用边框、不用大面积色块。
+- **手机端 / PWA**：
+  - 可安装（manifest + service worker + 图标）。
+  - **Web Share Target**：Android 可从微信/飞书「分享 → Markdown Viewer」直接打开 md（SW 接收 POST→暂存→渲染）。
+  - **file_handlers**：已安装后可作为 .md 的「打开方式」（Android/桌面 Chrome）。
+  - **剪贴板/粘贴**：通用（含 iOS）路径——复制 md 文本 →「从剪贴板粘贴」/ 粘贴文本框。
+  - 落地页含微信/飞书打开引导（通用/Android/iOS 三种）。
+  - 离线缓存 app shell + marked。
+- **底部署名**：落地页与阅读页均有 "Built by EarthOnline"（链 earthonline.site）。
+- **开源**：MIT License；GitHub 仓库 `EarthOnlineDev/markdown-viewer`（公开）。
+- **部署**：https://md-viewer-theta.vercel.app （Vercel 团队 earthonlinedevs-projects / 项目 md-viewer）。
+- **本地**：`./mdview`；server.py 现也服务 manifest/sw/favicon/icons，与线上一致。
+
+## 已验证
+
+- 本地 200：`/`、`/manifest.webmanifest`、`/sw.js`、`/favicon.svg`、`/icons/*`；`/api/read` 正常。
+- 落地页新入口（剪贴板/粘贴/URL/打开文件）与引导；粘贴→渲染通路；阅读页底部署名。
+- Service Worker 注册成功；桌面/移动（390px）无横向溢出。
+- 双主题切换、持久化、点 logo 返回首页仍正常。
 
 ## 待办 / 待决策
 
-1. **URL 访问保护（"私有"）** — 想让线上 URL 必须登录才能访问，需把 EarthOnlineDev 团队升级到 **Pro**（当前计划不支持 production 的 Vercel Authentication，API 返回 `428 invalid_sso_protection`）。当前：项目归属私有团队、源码不公开，但 URL 公开可访问。待用户决定是否升级。
-2. **自定义域名** — 可挂 `earthonline.site` 子域（该域名已在本团队，如 `flow.earthonline.site`）。建议 `md.earthonline.site` 或 `mdview.earthonline.site`，待用户确认后用 `vercel domains` / `vercel alias` 绑定。
-3. **旧地址 `md-viewer-green.vercel.app`** — 属于另一个无法访问的 Vercel 账号（`.vercel` 原 orgId `team_OZsXkxsfDaL3x9LGsFgnx6bA`），仍是旧样式。若要更新它，需先把 Vercel CLI 切到该账号再部署。
+1. **URL 登录保护（"私有"）** — 当前 Vercel 计划不支持 production 的 Vercel Authentication（API `428`）。若要 URL 必须登录才可访问，需升级团队到 Pro。当前：私有团队项目 + 公开 URL。
+2. **自定义域名** — 可挂 `earthonline.site` 子域（如 `md.earthonline.site`），待确认名称后用 `vercel domains/alias` 绑定。
+3. **Git Integration** — 已（尝试）将 Vercel 项目连到 GitHub 仓库；之后 push 到 main 可自动部署。若未连成，仍可 `vercel deploy --prod --yes`。
+4. **旧地址 `md-viewer-green.vercel.app`** — 属另一个无法访问的 Vercel 账号，仍是旧版；如需更新需切换 CLI 登录。
+
+## iOS 限制（产品须知）
+
+iOS 不支持 Web 分享目标与网页文件处理器，所以 iOS 用户走「复制文本→粘贴」或「存到文件→打开文件」；Android 才有「分享到 App / 打开方式」直达。落地页引导已据此分平台说明。
 
 ## 部署备忘
 
 ```bash
-vercel deploy --prod --yes     # 在本目录直接发布到生产
+vercel deploy --prod --yes          # CLI 直接发布
+# 或 push 到 main（若已连 Git Integration，自动部署）
 ```
 
-- `.vercel/`、`.env.local` 均已 gitignore；`.env.local` 为 Vercel 拉取的本地开发环境变量（含短期 OIDC token），不要提交。
-- 改样式 → 本地 `./mdview` 验证 → `vercel deploy --prod --yes`。
+- `.vercel/`、`.env.local`、`.DS_Store`、`url-to-markdown/`、`.claude/` 均已 gitignore，不进公开仓库。

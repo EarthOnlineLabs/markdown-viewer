@@ -7,8 +7,18 @@ Usage:
 """
 import sys, os, http.server, urllib.parse, webbrowser, socket, threading
 
-VIEWER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'md-viewer.html')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+VIEWER = os.path.join(BASE_DIR, 'md-viewer.html')
 PORT = 9274
+
+# Static assets served locally so the PWA (manifest / service worker / icons)
+# behaves the same as the deployed site.
+STATIC_TYPES = {
+    '.webmanifest': 'application/manifest+json',
+    '.js': 'text/javascript; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+}
 
 class Handler(http.server.BaseHTTPRequestHandler):
     def _cors(self):
@@ -49,11 +59,33 @@ class Handler(http.server.BaseHTTPRequestHandler):
             with open(path, 'rb') as f:
                 self.wfile.write(f.read())
 
+        elif parsed.path in ('/manifest.webmanifest', '/sw.js', '/favicon.svg') or \
+                (parsed.path.startswith('/icons/') and parsed.path.endswith('.png')):
+            self._serve_static(parsed.path)
+
         else:
             self.send_response(404)
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
             self.wfile.write(b'Not found')
+
+    def _serve_static(self, req_path):
+        rel = req_path.lstrip('/')
+        full = os.path.normpath(os.path.join(BASE_DIR, rel))
+        # path-traversal guard: must stay within BASE_DIR
+        if not full.startswith(BASE_DIR + os.sep) or not os.path.isfile(full):
+            self.send_response(404)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'Not found')
+            return
+        ctype = STATIC_TYPES.get(os.path.splitext(full)[1], 'application/octet-stream')
+        self.send_response(200)
+        self.send_header('Content-Type', ctype)
+        self._cors()
+        self.end_headers()
+        with open(full, 'rb') as f:
+            self.wfile.write(f.read())
 
     def log_message(self, *args):
         pass

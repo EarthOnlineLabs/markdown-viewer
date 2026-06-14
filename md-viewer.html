@@ -3,8 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Markdown Viewer</title>
+<title>Markdown Viewer · EarthOnline</title>
+<meta name="description" content="一个单文件 Markdown 美化阅读器 — 本地文件 / URL / 剪贴板 / 手机分享打开。Built by EarthOnline.">
 <script>/* set theme before paint to avoid FOUC */try{document.documentElement.setAttribute('data-theme',localStorage.getItem('md_theme')==='classic'?'classic':'aiself')}catch(e){}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#FFFFFF" id="themeColorMeta">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Markdown Viewer">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
@@ -398,6 +407,91 @@
   .url-input-group button {
     padding: 10px 20px;
     flex-shrink: 0;
+  }
+
+  /* landing actions: clipboard / paste */
+  .landing-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .action-row { display: flex; gap: 8px; }
+  .action-row .btn { flex: 1; justify-content: center; padding: 11px 14px; }
+  .paste-box { display: none; }
+  .paste-box.open { display: block; margin-top: 2px; }
+  .paste-box textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 12px 14px;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--r-input);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+  }
+  .paste-box textarea::placeholder { color: var(--muted); }
+  .paste-box textarea:focus { border-color: var(--drop-active-border); }
+  .paste-box .paste-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  /* WeChat / Feishu open-on-mobile help */
+  .landing-help {
+    margin-top: 18px;
+    text-align: left;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-card);
+    background: var(--card);
+    overflow: hidden;
+  }
+  .landing-help summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 16px;
+    font-family: var(--font-ui);
+    font-size: 13.5px;
+    color: var(--soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .landing-help summary::-webkit-details-marker { display: none; }
+  .landing-help summary .chev { margin-left: auto; transition: transform .2s; color: var(--muted); }
+  .landing-help[open] summary .chev { transform: rotate(90deg); }
+  .landing-help .help-body { padding: 2px 16px 14px; font-family: var(--font-ui); font-size: 12.5px; color: var(--soft); line-height: 1.7; }
+  .landing-help .help-body ol { margin: 4px 0 10px; padding-left: 18px; }
+  .landing-help .help-body li { margin: 3px 0; }
+  .landing-help .help-body b { color: var(--ink); font-weight: 600; }
+  .landing-help .plat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--a-blue);
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  html[data-theme="aiself"] .landing-help .plat:nth-of-type(1) { color: var(--a-green); }
+  html[data-theme="aiself"] .landing-help .plat:nth-of-type(3) { color: var(--a-orange); }
+
+  /* footer: Built by EarthOnline */
+  .app-footer {
+    margin-top: 26px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .app-footer a {
+    color: var(--soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .app-footer a:hover { color: var(--ink); }
+  .reader-footer {
+    max-width: var(--read);
+    margin: 0 auto;
+    padding: 22px 24px 40px;
+    border-top: 1px solid var(--rule);
+    margin-top: 8px;
   }
 
   /* ===== Drag Overlay (full-page, for when content is displayed) ===== */
@@ -843,7 +937,7 @@
       color-adjust: exact !important;
     }
 
-    .toolbar, .sidebar, .drag-overlay, .img-bar { display: none !important; }
+    .toolbar, .sidebar, .drag-overlay, .img-bar, .app-footer { display: none !important; }
     body { background: #fff; }
 
     .main { margin-left: 0 !important; }
@@ -1014,14 +1108,45 @@
     </div>
     <div class="drop-area" id="dropArea">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 5v14m-5-4l5 4 5-4"/><rect x="3" y="2" width="18" height="20" rx="3"/></svg>
-      <p>拖放 Markdown 文件到此处</p>
-      <small>支持 .md / .markdown / .txt，也可点击此区域选择文件</small>
+      <p>拖放或点击选择 Markdown 文件</p>
+      <small>支持 .md / .markdown / .txt</small>
+    </div>
+    <div class="landing-actions">
+      <div class="action-row">
+        <button class="btn" type="button" id="clipBtn">📋 从剪贴板粘贴</button>
+        <button class="btn" type="button" id="pasteToggleBtn">✎ 粘贴文本</button>
+      </div>
+      <div class="paste-box" id="pasteBox">
+        <textarea id="pasteArea" placeholder="把 Markdown 文本粘贴到这里…"></textarea>
+        <div class="paste-actions"><button class="btn primary" type="button" id="pasteRenderBtn">渲染</button></div>
+      </div>
     </div>
     <div class="landing-divider">或粘贴链接加载</div>
     <div class="url-input-group">
       <input type="text" id="urlInput" placeholder="输入路径或 URL…">
       <button id="urlLoadBtn">加载</button>
     </div>
+    <details class="landing-help">
+      <summary>📱 手机上在微信 / 飞书收到 md 文件？<span class="chev">›</span></summary>
+      <div class="help-body">
+        <div class="plat">通用 · 复制文本（含 iOS）</div>
+        <ol>
+          <li>在微信/飞书里点开该 md 文件，<b>全选 → 复制</b> 它的文字；</li>
+          <li>回到本页，点 <b>「从剪贴板粘贴」</b>，即可渲染。</li>
+        </ol>
+        <div class="plat">Android · 分享到 App</div>
+        <ol>
+          <li>把本页 <b>添加到主屏幕</b> 安装；</li>
+          <li>在微信/飞书里对文件选 <b>分享 → Markdown Viewer</b>，直接打开。</li>
+        </ol>
+        <div class="plat">iOS · 存到「文件」</div>
+        <ol>
+          <li>对文件选 <b>「存储到‘文件’」</b>；</li>
+          <li>回到本页点 <b>「打开文件」</b> 选择它。</li>
+        </ol>
+      </div>
+    </details>
+    <footer class="app-footer">Built by <a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
   </div>
 </div>
 
@@ -1036,6 +1161,7 @@
   </aside>
   <main class="main">
     <div class="content" id="output"></div>
+    <footer class="app-footer reader-footer">Built by <a href="https://earthonline.site" target="_blank" rel="noopener">EarthOnline</a></footer>
   </main>
 </div>
 
@@ -1059,6 +1185,11 @@ const dragOverlay = $('dragOverlay');
 const urlInput   = $('urlInput');
 const imgBar     = $('imgBar');
 const imgPathInput = $('imgPathInput');
+const clipBtn        = $('clipBtn');
+const pasteToggleBtn = $('pasteToggleBtn');
+const pasteBox       = $('pasteBox');
+const pasteArea      = $('pasteArea');
+const pasteRenderBtn = $('pasteRenderBtn');
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -1069,6 +1200,8 @@ const themeSeg = $('themeSeg');
 function applyTheme(t) {
   const theme = t === 'classic' ? 'classic' : 'aiself';
   document.documentElement.setAttribute('data-theme', theme);
+  const tc = document.getElementById('themeColorMeta');
+  if (tc) tc.setAttribute('content', theme === 'classic' ? '#faf9f7' : '#FFFFFF');
   themeSeg.querySelectorAll('button').forEach(b => {
     const on = b.dataset.themeVal === theme;
     b.classList.toggle('active', on);
@@ -1312,6 +1445,43 @@ urlInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') handleInput(urlInput.value);
 });
 
+// ===== Clipboard / manual paste (mobile-friendly: WeChat/Feishu → 复制 → 粘贴) =====
+function revealPasteBox() {
+  pasteBox.classList.add('open');
+  pasteArea.focus();
+}
+
+clipBtn.addEventListener('click', async () => {
+  if (!navigator.clipboard || !navigator.clipboard.readText) {
+    showToast('该浏览器不支持读取剪贴板，请用「粘贴文本」', true);
+    revealPasteBox();
+    return;
+  }
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && text.trim()) {
+      renderMd(text, '剪贴板内容');
+    } else {
+      showToast('剪贴板是空的', true);
+      revealPasteBox();
+    }
+  } catch (err) {
+    showToast('无法读取剪贴板，请手动粘贴到下方文本框', true);
+    revealPasteBox();
+  }
+});
+
+pasteToggleBtn.addEventListener('click', () => {
+  pasteBox.classList.toggle('open');
+  if (pasteBox.classList.contains('open')) pasteArea.focus();
+});
+
+pasteRenderBtn.addEventListener('click', () => {
+  const t = pasteArea.value;
+  if (t && t.trim()) renderMd(t, '粘贴内容');
+  else showToast('请先粘贴 Markdown 文本', true);
+});
+
 // ===== File Handling =====
 function handleFile(file) {
   if (!file) return;
@@ -1458,14 +1628,57 @@ function checkImages() {
   }
 }
 
+// ===== Web Share Target — read what the SW stashed from a shared file/text/url =====
+async function consumeShared() {
+  try {
+    const cache = await caches.open('md-shared');
+    const res = await cache.match('/__shared__');
+    if (!res) return false;
+    const data = await res.json();
+    await cache.delete('/__shared__');
+    if (data && data.text && data.text.trim()) { renderMd(data.text, data.name || '分享内容'); return true; }
+    if (data && data.url) { loadFromUrl(data.url); return true; }
+  } catch (_) {}
+  return false;
+}
+
 // ===== Init =====
 (function init() {
   const params = new URLSearchParams(window.location.search);
+  if (params.get('from') === 'share') {
+    consumeShared().then(handled => {
+      history.replaceState({}, '', window.location.pathname);
+      if (!handled) showToast('没有收到分享内容', true);
+    });
+    return;
+  }
   const file = params.get('file');
   const url = params.get('url');
+  const text = params.get('text');
   if (file) loadLocalFile(file);
   else if (url) loadFromUrl(url);
+  else if (text && text.trim()) renderMd(text, '分享内容');
 })();
+
+// ===== PWA: register service worker + handle "open with" file launches =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+if ('launchQueue' in window) {
+  try {
+    window.launchQueue.setConsumer(async (lp) => {
+      if (lp && lp.files && lp.files.length) {
+        try {
+          const f = await lp.files[0].getFile();
+          const txt = await f.text();
+          renderMd(txt, f.name || '文件');
+        } catch (_) {}
+      }
+    });
+  } catch (_) {}
+}
 </script>
 </body>
 </html>
