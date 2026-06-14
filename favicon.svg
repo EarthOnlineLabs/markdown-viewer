@@ -8,5 +8,5 @@
       <stop offset="1" stop-color="#E8482A"/>
     </linearGradient>
   </defs>
-  <text x="30" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGrad)">MD</text>
+  <text x="30" y="32" text-anchor="middle" textLength="52" lengthAdjust="spacingAndGlyphs" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGrad)">MD</text>
 </svg>

@@ -28,15 +28,13 @@
     --r-input: 12px;
     --r-card: 14px;
     --r-pill: 999px;
-    --r-sw: 5px;
     --read: 720px;
     --tb-h: 49px;
     --sh-sm: 0 1px 2px rgba(20,20,20,.08);
     --sh-raise: 0 3px 10px rgba(27,27,27,.18);
-    --sh-card: 0 8px 24px rgba(0,0,0,.16);
     /* brand spectrum (波长序 紫→蓝→绿→橙→红) — used by aiself accents */
     --a-purple:#8A43E6; --a-blue:#4FA8F0; --a-green:#1FA45D; --a-orange:#F4811E; --a-coral:#E8482A;
-    --t-purple:#DEC9F5; --t-blue:#D2E9FB; --t-green:#ACE7C4; --t-orange:#FBD6A0; --t-coral:#F8C9BD;
+    --t-blue:#D2E9FB; --t-green:#ACE7C4; --t-orange:#FBD6A0; --t-coral:#F8C9BD;
   }
 
   /* ---------- AISelf 光谱 (default) ---------- */
@@ -48,7 +46,7 @@
 
     --paper:#FFFFFF;
     --ink:#1B1B1B; --ink-strong:#0E0E0E; --soft:#5A5C5E; --muted:#9CA0A2;
-    --rule:#ECECEB; --rule-strong:#DBDBDA; --card:#FAFAF9; --card-2:#F2F1EE;
+    --rule:#ECECEB; --rule-strong:#DBDBDA;
 
     --toolbar-bg: rgba(255,255,255,.82);
     --title-ink:#1B1B1B; --title-hover:#4FA8F0;
@@ -862,7 +860,7 @@
       page-break-inside: avoid;
     }
 
-    /* dark code blocks waste ink — force light for print */
+    /* keep code blocks light & clean for print */
     .content pre {
       margin: 10px 0;
       padding: 8px 12px;
@@ -878,7 +876,7 @@
       font-size: 11.5px;
     }
     .content tr { page-break-inside: avoid; }
-    /* classic th is solid navy on screen — force light for print to save ink */
+    /* keep table headers light for print */
     .content th {
       padding: 5px 8px;
       font-size: 11px;
@@ -928,7 +926,7 @@
       <defs><linearGradient id="mdGradTb" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#8A43E6"/><stop offset=".27" stop-color="#4FA8F0"/><stop offset=".5" stop-color="#1FA45D"/><stop offset=".73" stop-color="#F4811E"/><stop offset="1" stop-color="#E8482A"/>
       </linearGradient></defs>
-      <text x="30" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradTb)">MD</text>
+      <text x="30" y="32" text-anchor="middle" textLength="52" lengthAdjust="spacingAndGlyphs" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradTb)">MD</text>
     </svg>
     <h1 id="titleBtn">Markdown Viewer</h1>
   </span>
@@ -972,7 +970,7 @@
         <defs><linearGradient id="mdGradLd" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#8A43E6"/><stop offset=".27" stop-color="#4FA8F0"/><stop offset=".5" stop-color="#1FA45D"/><stop offset=".73" stop-color="#F4811E"/><stop offset="1" stop-color="#E8482A"/>
         </linearGradient></defs>
-        <text x="30" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradLd)">MD</text>
+        <text x="30" y="32" text-anchor="middle" textLength="52" lengthAdjust="spacingAndGlyphs" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="-2" fill="url(#mdGradLd)">MD</text>
       </svg>
       <span class="tagline">Markdown Viewer</span>
     </div>
