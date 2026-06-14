@@ -8,6 +8,11 @@
 # Local Claude config
 .claude/
 
+# Internal working / handoff docs — not for the public repo
+HANDOVER.md
+project.md
+tasks/
+
 # Unrelated local utility (not part of the open-source viewer)
 url-to-markdown/
 
