@@ -1222,15 +1222,8 @@ async function loadLocalFile(path) {
   const apiBase = isLocalServer ? '' : LOCAL_API;
 
   if (!isLocalServer) {
-    try {
-      const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 2000);
-      await fetch(LOCAL_API + '/api/read?path=__probe__', { signal: ctrl.signal });
-      clearTimeout(tid);
-    } catch {
-      showToast('本地服务未运行，请先执行 mdview 启动服务', true);
-      return;
-    }
+    showToast('本地文件需通过 mdview 命令打开', true);
+    return;
   }
 
   showToast('加载中…');
